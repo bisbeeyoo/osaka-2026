@@ -15,6 +15,7 @@
 <title>지출내역 · 유 패밀리 오사카</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <style>
   :root{
     --sky:#d6e8f7; --peach:#fbdcd5; --peach-ink:#b0574d;
@@ -135,13 +136,10 @@
 <div class="toast" id="toast"></div>
 
 <script>
-/* ═══════════════════════════════════════════════
-   🔑 Supabase 설정 — 가족 휴대폰끼리 공유하려면 KEY를 넣으세요
-   (Supabase → Project Settings → API → anon public key)
-   KEY가 비어 있으면 이 휴대폰에만 저장돼요.
-   ═══════════════════════════════════════════════ */
-const SUPABASE_URL = "https://krwzqoktydwalnsbshmc.supabase.co";
-const SUPABASE_KEY = "";               // ← 여기에 anon public key 붙여넣기
+/* 🔑 Supabase 키는 config.js 한 곳에서 관리해요 */
+const CFG = window.OSAKA_CONFIG || {};
+const SUPABASE_URL = CFG.SUPABASE_URL || "";
+const SUPABASE_KEY = CFG.SUPABASE_KEY || "";
 const TABLE = "osaka_expenses";
 
 const DAYS = [
@@ -193,7 +191,7 @@ function todayDefault(){
 function setup(){
   $("#mode").className = "mode " + (sb ? "cloud" : "local");
   $("#mode").innerHTML = sb ? "☁️ 가족 공유 중이에요. 누가 추가해도 모두에게 보여요."
-    : "📱 지금은 이 휴대폰에만 저장돼요.<br>가족과 공유하려면 파일 안의 SUPABASE_KEY를 넣어 주세요.";
+    : "📱 지금은 이 휴대폰에만 저장돼요.<br>가족과 공유하려면 config.js에 Supabase 키를 넣어 주세요.";
   $("#fDay").innerHTML = DAYS.map(d=>`<option value="${d.date}">${d.label}</option>`).join("");
   $("#fDay").value = todayDefault();
   $("#fCat").innerHTML = CATS.map(c=>`<option value="${c.k}">${c.ic} ${c.k}</option>`).join("");

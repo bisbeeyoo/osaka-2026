@@ -605,7 +605,7 @@
     <h2 class="sec-title">📝 아직 예약할 것</h2>
     <div class="talk-group" id="todoList"></div>
   </section>
-  <section class="panel" id="album"><div class="coming"><div class="ic">📸</div><b>앨범</b>Supabase 연동 앨범이 들어갈 자리예요</div></section>
+  <section class="panel" id="album"><div class="coming"><div class="ic">📸</div><b>가족 앨범</b>사진을 올리고 같이 보는 곳이에요<br><br><a class="btn primary" href="album.html" style="display:inline-block;padding:12px 22px">📸 앨범 열기</a></div></section>
 
   <footer>Made with 💙 for Yoo Family</footer>
 </main>
@@ -1391,6 +1391,7 @@ function showTab(id){
 }
 $("#tabs").addEventListener("click",e=>{
   const b=e.target.closest(".tab"); if(!b) return;
+  if(b.dataset.tab==="album"){ location.href="album.html"; return; }
   try{ history.replaceState(null,"","#"+b.dataset.tab); }catch(err){ /* 미리보기 창에서는 주소 변경이 막혀 있어서 무시 */ }
   showTab(b.dataset.tab); window.scrollTo({top:0});
 });

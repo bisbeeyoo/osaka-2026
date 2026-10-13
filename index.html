@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#d6e8f7">
+<meta name="color-scheme" content="light only">
+<meta name="format-detection" content="telephone=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="유패밀리 오사카">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%AF%3C/text%3E%3C/svg%3E">
+
 <title>유 패밀리 오사카 여행</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -151,7 +160,7 @@
     cursor:zoom-in;overflow:hidden;
   }
   .hotel-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
-  .hotel-img:hover img{transform:scale(1.04)}
+  @media(hover:hover){.hotel-img:hover img{transform:scale(1.04)}}
   .hotel-img .noimg{
     position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     color:var(--blue);font-size:2.4rem;cursor:default;
@@ -407,7 +416,7 @@
   .talk .jp{font-size:1.05rem;font-weight:700;color:var(--ink);margin-top:1px}
   .talk .rd{font-size:.86rem;color:var(--coral);font-weight:700}
   .big-talk{position:fixed;inset:0;z-index:110;background:#fff;display:none;flex-direction:column;
-    align-items:center;justify-content:center;padding:24px;text-align:center}
+    align-items:center;justify-content:center;padding:calc(70px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));text-align:center}
   .big-talk.on{display:flex}
   .bt-jp{font-size:2.4rem;font-weight:900;line-height:1.35;color:var(--ink)}
   .bt-ko{margin-top:16px;font-size:1rem;color:var(--muted)}
@@ -440,7 +449,8 @@
   .daily.today .daily-head{background:var(--peach);color:var(--peach-ink)}
 
   /* ───────── 날짜별 팝업 ───────── */
-  .pop{position:fixed;inset:0;z-index:130;background:rgba(52,65,75,.55);display:none;align-items:center;justify-content:center;padding:20px}
+  .pop{position:fixed;inset:0;z-index:130;background:rgba(52,65,75,.55);display:none;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));overscroll-behavior:contain}
+  .pop-box{max-height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .pop.on{display:flex}
   .pop-box{background:#fff;border-radius:22px;max-width:380px;width:100%;padding:24px 20px 18px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.25)}
   .pop-ic{font-size:2.6rem;line-height:1}
@@ -465,6 +475,8 @@
     display:none;align-items:center;justify-content:center;padding:20px;
   }
   .lb.on{display:flex}
+  .lb{overscroll-behavior:contain;touch-action:pan-y pinch-zoom}
+  .lb img{max-height:calc(100dvh - 160px)}
   .lb img{max-width:100%;max-height:85vh;border-radius:10px;object-fit:contain}
   .lb-cap{position:absolute;bottom:calc(20px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:#fff;font-size:.9rem;padding:0 20px}
   .lb-x{
@@ -486,13 +498,34 @@
   .lb-cap b{display:block;margin-top:4px;font-size:.85rem;opacity:.85}
 
   .toast{
-    position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);
+    position:fixed;left:50%;bottom:calc(30px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);
     background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;
     font-size:.85rem;opacity:0;pointer-events:none;transition:.25s;z-index:120;
   }
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
   footer{text-align:center;color:var(--muted);font-size:.78rem;padding:20px 0 40px}
+
+  /* ───────── 📱 아이폰·갤럭시 호환 ───────── */
+  .hero::after{z-index:0}
+  .hero > *{position:relative;z-index:1}
+  .panel{scroll-margin-top:140px}
+  @media(max-width:400px){
+    .tabs{padding:0 6px;gap:0}
+    .tab{min-width:0;padding:10px 6px 12px;font-size:.86rem}
+    .top-row{padding:10px 12px 6px}
+    .brand small{font-size:.68rem}
+  }
+  html{color-scheme:light;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+  body{font-family:'Noto Sans KR',-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Samsung Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;overscroll-behavior-y:none}
+  button,a,input,select{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  input,select,textarea{font-size:16px !important}   /* 아이폰: 16px 미만이면 입력할 때 화면이 확대됨 */
+  input[type=number]{-moz-appearance:textfield}
+  input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  select{-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#7d8a93 50%),linear-gradient(135deg,#7d8a93 50%,transparent 50%);
+    background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px !important}
+  img{-webkit-user-drag:none}
 </style>
 </head>
 <body>
@@ -1361,7 +1394,7 @@ $("#tabs").addEventListener("click",e=>{
   try{ history.replaceState(null,"","#"+b.dataset.tab); }catch(err){ /* 미리보기 창에서는 주소 변경이 막혀 있어서 무시 */ }
   showTab(b.dataset.tab); window.scrollTo({top:0});
 });
-window.addEventListener("hashchange",()=>showTab(location.hash.slice(1)));
+window.addEventListener("hashchange",()=>{ showTab(location.hash.slice(1)); window.scrollTo(0,0); });
 
 /* ── 라이트박스 (data-lb 달린 모든 사진 · 같은 그룹이면 좌우로 넘기기) ── */
 let lbList=[], lbIdx=0, lbPushed=false;
@@ -1407,13 +1440,18 @@ $("#lb").addEventListener("touchend",e=>{
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),1600); }
 document.addEventListener("click",async e=>{
   const b=e.target.closest("[data-copy]"); if(!b) return;
-  try{ await navigator.clipboard.writeText(b.dataset.copy); toast("복사했어요 📋"); }
-  catch{ toast("복사가 안 되면 길게 눌러 복사해 주세요"); }
+  const txt=b.dataset.copy;
+  try{ await navigator.clipboard.writeText(txt); toast("복사했어요 📋"); return; }catch(err){}
+  try{ const ta=document.createElement("textarea"); ta.value=txt; ta.setAttribute("readonly",""); ta.style.cssText="position:fixed;top:-100px;opacity:0";
+       document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0,txt.length); const ok=document.execCommand("copy"); ta.remove();
+       toast(ok?"복사했어요 📋":"복사가 안 되면 길게 눌러 복사해 주세요"); }
+  catch(err){ toast("복사가 안 되면 길게 눌러 복사해 주세요"); }
 });
 
 /* ── 시작 ── */
 renderHero(); renderFlights(); renderHotels(); renderChips(); renderSchedule(); renderShop(); renderFood(); renderFoodSum(); renderTalk(); renderCheck();
 showTab(location.hash.slice(1)||"plan");
+window.scrollTo(0,0); setTimeout(()=>window.scrollTo(0,0),0);
 showPopup();
 </script>
 </body>

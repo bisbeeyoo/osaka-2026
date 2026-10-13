@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>엔→원 계산기 · 유 패밀리 오사카</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#d6e8f7; --peach:#fbdcd5; --peach-ink:#b0574d;
+    --blue:#6b9cc8; --blue-dark:#46698c; --blue-soft:#eef5fc;
+    --coral:#e48b81; --coral-soft:#fdf1ef;
+    --ink:#34414b; --muted:#7d8a93; --line:#e8edf1; --bg:#fbf8f5; --card:#fff;
+    --shadow:0 4px 18px rgba(107,156,200,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+    word-break:keep-all;-webkit-text-size-adjust:100%;min-height:100vh;
+    padding-bottom:env(safe-area-inset-bottom)}
+  .top{position:sticky;top:0;z-index:5;background:var(--sky);padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 12px rgba(107,156,200,.18)}
+  .back{display:inline-flex;align-items:center;gap:4px;background:#fff;color:var(--blue-dark);text-decoration:none;
+    font-weight:700;font-size:.85rem;padding:7px 12px;border-radius:999px}
+  .top h1{font-size:1.05rem;font-weight:900;color:var(--blue-dark)}
+  main{max-width:480px;margin:0 auto;padding:16px}
+
+  .display{background:var(--card);border-radius:20px;box-shadow:var(--shadow);padding:18px 20px}
+  .row-label{font-size:.8rem;color:var(--muted);font-weight:700;display:flex;justify-content:space-between;align-items:center}
+  .swap{border:none;background:var(--blue-soft);color:var(--blue-dark);font:inherit;font-size:.78rem;font-weight:700;
+    padding:5px 10px;border-radius:999px;cursor:pointer}
+  .in{font-size:2.3rem;font-weight:900;text-align:right;margin-top:4px;min-height:3rem;word-break:break-all}
+  .in small{font-size:1.1rem;font-weight:700;color:var(--muted);margin-left:4px}
+  .divider{height:1px;background:var(--line);margin:12px 0}
+  .out{font-size:1.9rem;font-weight:900;text-align:right;color:var(--peach-ink);margin-top:4px;word-break:break-all}
+  .out small{font-size:1rem;font-weight:700;margin-left:4px}
+  .per{font-size:.85rem;color:var(--muted);text-align:right;margin-top:4px}
+
+  .quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+  .quick button{border:none;background:var(--peach);color:var(--peach-ink);font:inherit;font-weight:700;font-size:.85rem;
+    padding:10px 4px;border-radius:12px;cursor:pointer}
+
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .pad button{border:none;background:var(--card);box-shadow:var(--shadow);font:inherit;font-size:1.5rem;font-weight:700;
+    color:var(--ink);padding:16px 0;border-radius:16px;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+  .pad button:active{transform:scale(.96);background:var(--blue-soft)}
+  .pad .fn{background:var(--blue-soft);color:var(--blue-dark);font-size:1.1rem}
+
+  .rate{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:14px 16px;margin-top:16px}
+  .rate label{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.88rem;font-weight:700;color:var(--blue-dark)}
+  .rate input{width:90px;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:1rem;text-align:right}
+  .rate input:focus{outline:none;border-color:var(--blue)}
+  .rate p{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.6}
+  .reset{border:none;background:var(--blue-soft);color:var(--blue-dark);font:inherit;font-size:.78rem;font-weight:700;padding:6px 10px;border-radius:999px;cursor:pointer}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="index.html">← 여행 페이지</a>
+  <h1>🔴 엔 → 원 계산기</h1>
+</header>
+
+<main>
+  <section class="display">
+    <div class="row-label"><span id="inLabel">일본 엔 (¥)</span><button class="swap" id="swap">⇅ 원→엔</button></div>
+    <div class="in" id="inVal">0<small id="inUnit">엔</small></div>
+    <div class="divider"></div>
+    <div class="row-label"><span id="outLabel">한국 원 (₩)</span></div>
+    <div class="out" id="outVal">0<small id="outUnit">원</small></div>
+    <div class="per" id="per"></div>
+  </section>
+
+  <div class="quick" id="quick"></div>
+
+  <div class="pad" id="pad">
+    <button>7</button><button>8</button><button>9</button>
+    <button>4</button><button>5</button><button>6</button>
+    <button>1</button><button>2</button><button>3</button>
+    <button class="fn" data-k="C">C</button><button>0</button><button class="fn" data-k="del">⌫</button>
+    <button class="fn" data-k="00" style="grid-column:span 3">00</button>
+  </div>
+
+  <section class="rate">
+    <label>💴 환율: 1엔 = <input id="rate" type="number" inputmode="decimal" step="0.01"> 원 <button class="reset" id="rateReset">기본값</button></label>
+    <p>기본값은 100엔 ≈ 863원 (2026.09.29 기준)이에요.<br>여행 직전에 실제 환율로 바꿔 주세요. 이 휴대폰에 저장돼요.</p>
+  </section>
+</main>
+
+<script>
+const DEFAULT_RATE = 8.63;
+const RATE_KEY = "yoo-osaka-rate";
+const $ = s => document.querySelector(s);
+let rate = DEFAULT_RATE;
+try{ const r = parseFloat(localStorage.getItem(RATE_KEY)); if(r>0) rate = r; }catch(e){}
+let val = "0";
+let mode = "yen";   // yen: 엔→원, won: 원→엔
+
+function fmtNum(n){ return Math.round(n).toLocaleString("ko-KR"); }
+function render(){
+  const n = Number(val) || 0;
+  $("#inVal").firstChild.textContent = Number(val).toLocaleString("ko-KR");
+  if(mode==="yen"){
+    const won = n * rate;
+    $("#outVal").firstChild.textContent = fmtNum(won);
+    $("#per").textContent = n ? `4명이 나누면 1인 ${fmtNum(won/4)}원` : "";
+  }else{
+    const yen = n / rate;
+    $("#outVal").firstChild.textContent = fmtNum(yen);
+    $("#per").textContent = n ? `4명이 나누면 1인 ${fmtNum(yen/4)}엔` : "";
+  }
+  $("#rate").value = rate;
+}
+function setMode(m){
+  mode = m;
+  const yen = mode==="yen";
+  $("#inLabel").textContent = yen ? "일본 엔 (¥)" : "한국 원 (₩)";
+  $("#outLabel").textContent = yen ? "한국 원 (₩)" : "일본 엔 (¥)";
+  $("#inUnit").textContent = yen ? "엔" : "원";
+  $("#outUnit").textContent = yen ? "원" : "엔";
+  $("#swap").textContent = yen ? "⇅ 원→엔" : "⇅ 엔→원";
+  const q = yen ? [500,1000,5000,10000] : [10000,50000,100000,500000];
+  $("#quick").innerHTML = q.map(v=>`<button data-v="${v}">${v.toLocaleString()}${yen?"엔":"원"}</button>`).join("");
+  val = "0"; render();
+}
+$("#pad").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  const k = b.dataset.k || b.textContent.trim();
+  if(k==="C") val = "0";
+  else if(k==="del") val = val.length>1 ? val.slice(0,-1) : "0";
+  else if(val.length < 10) val = (val==="0" ? "" : val) + k;
+  if(val==="" || /^0+$/.test(val)) val = "0";
+  render();
+});
+$("#quick").addEventListener("click", e=>{
+  const b = e.target.closest("button"); if(!b) return;
+  val = String(Number(val) + Number(b.dataset.v)); render();
+});
+$("#swap").addEventListener("click", ()=> setMode(mode==="yen" ? "won" : "yen"));
+$("#rate").addEventListener("input", e=>{
+  const r = parseFloat(e.target.value);
+  if(r>0){ rate = r; try{ localStorage.setItem(RATE_KEY, String(r)); }catch(err){} render(); }
+});
+$("#rateReset").addEventListener("click", ()=>{
+  rate = DEFAULT_RATE; try{ localStorage.removeItem(RATE_KEY); }catch(err){} render();
+});
+setMode("yen");
+</script>
+</body>
+</html>

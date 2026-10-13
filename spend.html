@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>지출내역 · 유 패밀리 오사카</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --sky:#d6e8f7; --peach:#fbdcd5; --peach-ink:#b0574d;
+    --blue:#6b9cc8; --blue-dark:#46698c; --blue-soft:#eef5fc;
+    --coral:#e48b81; --coral-soft:#fdf1ef;
+    --mint:#86cfae; --ok:#3fa575; --ok-soft:#e5f5ec;
+    --butter:#fff6dc; --butter-ink:#8a6d1f;
+    --ink:#34414b; --muted:#7d8a93; --line:#e8edf1; --bg:#fbf8f5; --card:#fff;
+    --shadow:0 4px 18px rgba(107,156,200,.12);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans KR',-apple-system,sans-serif;background:var(--bg);color:var(--ink);
+    word-break:keep-all;-webkit-text-size-adjust:100%;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+  .top{position:sticky;top:0;z-index:5;background:var(--sky);padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 2px 12px rgba(107,156,200,.18)}
+  .back{display:inline-flex;align-items:center;background:#fff;color:var(--blue-dark);text-decoration:none;
+    font-weight:700;font-size:.85rem;padding:7px 12px;border-radius:999px;white-space:nowrap}
+  .top h1{font-size:1.05rem;font-weight:900;color:var(--blue-dark)}
+  .sync{border:none;background:#fff;color:var(--blue-dark);font:inherit;font-size:.8rem;font-weight:700;padding:7px 10px;border-radius:999px;cursor:pointer;white-space:nowrap}
+  main{max-width:560px;margin:0 auto;padding:16px}
+
+  .mode{font-size:.78rem;border-radius:12px;padding:10px 14px;margin-bottom:12px;line-height:1.6}
+  .mode.cloud{background:var(--ok-soft);color:var(--ok)}
+  .mode.local{background:var(--butter);color:var(--butter-ink)}
+
+  .sum{background:linear-gradient(135deg,#d6e8f7 0%,#f8dfe6 100%);border-radius:20px;padding:18px 20px;color:var(--blue-dark)}
+  .sum small{font-size:.8rem;font-weight:700}
+  .sum .yen{font-size:2rem;font-weight:900;line-height:1.2;margin-top:2px}
+  .sum .won{font-size:1rem;font-weight:700;margin-top:2px}
+  .sum .per{display:inline-block;margin-top:10px;background:rgba(255,255,255,.65);padding:5px 12px;border-radius:999px;font-size:.82rem;font-weight:700}
+  .cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .cats span{background:rgba(255,255,255,.65);padding:3px 10px;border-radius:999px;font-size:.76rem;font-weight:700}
+
+  .chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:16px 0 12px;padding-bottom:2px}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0;border:1.5px solid var(--line);background:#fff;font:inherit;font-size:.82rem;font-weight:700;color:var(--ink);
+    padding:6px 14px;border-radius:999px;cursor:pointer}
+  .chip.on{background:var(--peach);border-color:var(--peach);color:var(--peach-ink)}
+
+  .form{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px}
+  .form h2{font-size:.95rem;font-weight:900;color:var(--blue-dark);margin-bottom:10px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .full{grid-column:1/-1}
+  .form label{display:block;font-size:.74rem;color:var(--muted);font-weight:700;margin-bottom:3px}
+  .form input,.form select{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:.95rem;background:#fff;color:var(--ink)}
+  .form input:focus,.form select:focus{outline:none;border-color:var(--blue)}
+  .won-hint{font-size:.78rem;color:var(--blue);font-weight:700;margin-top:4px;min-height:1.1em}
+  .add{width:100%;margin-top:12px;border:none;background:var(--ok);color:#fff;font:inherit;font-size:1rem;font-weight:900;padding:13px;border-radius:14px;cursor:pointer}
+  .add:disabled{opacity:.6}
+
+  .day{margin-top:18px}
+  .day-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:0 4px 8px}
+  .day-head b{font-size:.98rem;color:var(--blue-dark)}
+  .day-head span{font-size:.82rem;font-weight:700;color:var(--peach-ink)}
+  .list{background:var(--card);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+  .item{display:grid;grid-template-columns:38px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+  .item:first-child{border-top:none}
+  .ic{width:38px;height:38px;border-radius:12px;background:var(--blue-soft);display:flex;align-items:center;justify-content:center;font-size:1.15rem}
+  .t{font-weight:700;font-size:.92rem;line-height:1.35}
+  .s{font-size:.74rem;color:var(--muted);margin-top:1px}
+  .amt{text-align:right}
+  .amt b{display:block;font-size:.95rem}
+  .amt small{font-size:.74rem;color:var(--blue);font-weight:700}
+  .del{border:none;background:none;color:var(--muted);font-size:.72rem;cursor:pointer;padding:2px 0 0;text-decoration:underline}
+  .empty{text-align:center;color:var(--muted);font-size:.88rem;padding:30px 10px}
+  .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;
+    padding:10px 18px;border-radius:999px;font-size:.85rem;opacity:0;pointer-events:none;transition:.25s;z-index:20}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="back" href="index.html">← 여행 페이지</a>
+  <h1>💚 지출내역</h1>
+  <button class="sync" id="sync">🔄 새로고침</button>
+</header>
+
+<main>
+  <div class="mode" id="mode"></div>
+
+  <section class="sum">
+    <small id="sumLabel">전체 지출</small>
+    <div class="yen" id="sumYen">0엔</div>
+    <div class="won" id="sumWon">≈ 0원</div>
+    <div class="per" id="sumPer">1인 0원</div>
+    <div class="cats" id="cats"></div>
+  </section>
+
+  <div class="chips" id="chips"></div>
+
+  <section class="form">
+    <h2>✏️ 지출 추가</h2>
+    <div class="grid">
+      <div><label>날짜</label><select id="fDay"></select></div>
+      <div><label>분류</label><select id="fCat"></select></div>
+      <div class="full"><label>내용</label><input id="fTitle" placeholder="예: 무겐라멘 점심" maxlength="60"></div>
+      <div><label>금액 (엔)</label><input id="fAmt" type="number" inputmode="numeric" min="0" placeholder="0"><div class="won-hint" id="fWon"></div></div>
+      <div><label>누가 냈어요?</label><select id="fPayer"></select></div>
+      <div class="full"><label>메모 (선택)</label><input id="fMemo" placeholder="예: 카드 결제" maxlength="80"></div>
+    </div>
+    <button class="add" id="add">+ 추가하기</button>
+  </section>
+
+  <div id="days"></div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   🔑 Supabase 설정 — 가족 휴대폰끼리 공유하려면 KEY를 넣으세요
+   (Supabase → Project Settings → API → anon public key)
+   KEY가 비어 있으면 이 휴대폰에만 저장돼요.
+   ═══════════════════════════════════════════════ */
+const SUPABASE_URL = "https://krwzqoktydwalnsbshmc.supabase.co";
+const SUPABASE_KEY = "";               // ← 여기에 anon public key 붙여넣기
+const TABLE = "osaka_expenses";
+
+const DAYS = [
+  { date:"2026-12-28", label:"12/28(월)" },
+  { date:"2026-12-29", label:"12/29(화)" },
+  { date:"2026-12-30", label:"12/30(수)" },
+  { date:"2026-12-31", label:"12/31(목)" }
+];
+const CATS = [
+  { k:"식사", ic:"🍜" }, { k:"쇼핑", ic:"🛍️" }, { k:"교통", ic:"🚃" },
+  { k:"관광", ic:"🎡" }, { k:"숙소", ic:"🏨" }, { k:"기타", ic:"💡" }
+];
+const PAYERS = ["공용","아빠","엄마","나","동생"];
+const PEOPLE = 4;
+const RATE = (()=>{ try{ const r=parseFloat(localStorage.getItem("yoo-osaka-rate")); if(r>0) return r; }catch(e){} return 8.63; })();
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const won = y => Math.round(y*RATE).toLocaleString("ko-KR")+"원";
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),1600); }
+
+/* ── 저장소: Supabase 또는 이 휴대폰 ── */
+const LOCAL_KEY = "yoo-osaka-expenses";
+let sb = null;
+if(SUPABASE_KEY && window.supabase){ try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); }catch(e){ sb = null; } }
+function readLocal(){ try{ return JSON.parse(localStorage.getItem(LOCAL_KEY))||[]; }catch(e){ return []; } }
+function writeLocal(a){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(a)); }catch(e){} }
+const store = {
+  async list(){
+    if(sb){ const { data, error } = await sb.from(TABLE).select("*").order("created_at",{ascending:true}); if(error) throw error; return data; }
+    return readLocal();
+  },
+  async add(row){
+    if(sb){ const { error } = await sb.from(TABLE).insert(row); if(error) throw error; return; }
+    const a = readLocal(); a.push({ ...row, id: Date.now()+"-"+Math.random().toString(36).slice(2,7), created_at:new Date().toISOString() }); writeLocal(a);
+  },
+  async remove(id){
+    if(sb){ const { error } = await sb.from(TABLE).delete().eq("id", id); if(error) throw error; return; }
+    writeLocal(readLocal().filter(r=>String(r.id)!==String(id)));
+  }
+};
+
+/* ── 화면 ── */
+let rows = [], filter = "all";
+function todayDefault(){
+  const n=new Date(), t=`${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;
+  return DAYS.some(d=>d.date===t) ? t : DAYS[0].date;
+}
+function setup(){
+  $("#mode").className = "mode " + (sb ? "cloud" : "local");
+  $("#mode").innerHTML = sb ? "☁️ 가족 공유 중이에요. 누가 추가해도 모두에게 보여요."
+    : "📱 지금은 이 휴대폰에만 저장돼요.<br>가족과 공유하려면 파일 안의 SUPABASE_KEY를 넣어 주세요.";
+  $("#fDay").innerHTML = DAYS.map(d=>`<option value="${d.date}">${d.label}</option>`).join("");
+  $("#fDay").value = todayDefault();
+  $("#fCat").innerHTML = CATS.map(c=>`<option value="${c.k}">${c.ic} ${c.k}</option>`).join("");
+  $("#fPayer").innerHTML = PAYERS.map(p=>`<option>${p}</option>`).join("");
+}
+function render(){
+  const view = rows.filter(r=>filter==="all" || r.day===filter);
+  const total = view.reduce((s,r)=>s+(Number(r.amount_yen)||0),0);
+  $("#sumLabel").textContent = filter==="all" ? "전체 지출" : (DAYS.find(d=>d.date===filter)||{}).label+" 지출";
+  $("#sumYen").textContent = total.toLocaleString("ko-KR")+"엔";
+  $("#sumWon").textContent = "≈ "+won(total);
+  $("#sumPer").textContent = `${PEOPLE}명 1인 ≈ ${won(total/PEOPLE)}`;
+  $("#cats").innerHTML = CATS.map(c=>{ const v=view.filter(r=>r.category===c.k).reduce((s,r)=>s+(Number(r.amount_yen)||0),0); return v?`<span>${c.ic} ${c.k} ${v.toLocaleString()}엔</span>`:""; }).join("");
+
+  $("#chips").innerHTML = [`<button class="chip ${filter==="all"?"on":""}" data-d="all">전체</button>`]
+    .concat(DAYS.map(d=>`<button class="chip ${filter===d.date?"on":""}" data-d="${d.date}">${d.label}</button>`)).join("");
+
+  const days = DAYS.filter(d=>filter==="all"||d.date===filter);
+  const html = days.map(d=>{
+    const list = rows.filter(r=>r.day===d.date);
+    if(!list.length) return "";
+    const sum = list.reduce((s,r)=>s+(Number(r.amount_yen)||0),0);
+    return `<div class="day"><div class="day-head"><b>${d.label}</b><span>${sum.toLocaleString()}엔 · ≈ ${won(sum)}</span></div>
+      <div class="list">${list.map(r=>{ const c=CATS.find(x=>x.k===r.category)||CATS[5]; return `
+        <div class="item">
+          <div class="ic">${c.ic}</div>
+          <div><div class="t">${esc(r.title)}</div><div class="s">${esc(r.category)} · ${esc(r.payer||"공용")}${r.memo?` · ${esc(r.memo)}`:""}</div></div>
+          <div class="amt"><b>${Number(r.amount_yen).toLocaleString()}엔</b><small>≈ ${won(r.amount_yen)}</small><br><button class="del" data-id="${esc(r.id)}">삭제</button></div>
+        </div>`; }).join("")}</div></div>`;
+  }).join("");
+  $("#days").innerHTML = html || `<div class="empty">아직 지출이 없어요.<br>위에서 첫 지출을 추가해 보세요 ✏️</div>`;
+}
+async function load(showToast){
+  try{ rows = await store.list(); render(); if(showToast) toast("최신 내역을 불러왔어요"); }
+  catch(e){ toast("불러오기 실패 · 인터넷 연결을 확인해 주세요"); console.error(e); }
+}
+
+$("#chips").addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b) return; filter=b.dataset.d; render(); });
+$("#fAmt").addEventListener("input",e=>{ const v=Number(e.target.value); $("#fWon").textContent = v ? "≈ "+won(v) : ""; });
+$("#add").addEventListener("click", async ()=>{
+  const title=$("#fTitle").value.trim(), amt=Math.round(Number($("#fAmt").value));
+  if(!title){ toast("내용을 적어 주세요"); $("#fTitle").focus(); return; }
+  if(!(amt>0)){ toast("금액(엔)을 넣어 주세요"); $("#fAmt").focus(); return; }
+  const row={ day:$("#fDay").value, title, category:$("#fCat").value, amount_yen:amt, payer:$("#fPayer").value, memo:$("#fMemo").value.trim() };
+  $("#add").disabled=true;
+  try{ await store.add(row); $("#fTitle").value=""; $("#fAmt").value=""; $("#fMemo").value=""; $("#fWon").textContent=""; await load(); toast("추가했어요 ✅"); }
+  catch(e){ toast("저장 실패 · 다시 시도해 주세요"); console.error(e); }
+  $("#add").disabled=false;
+});
+$("#days").addEventListener("click", async e=>{
+  const b=e.target.closest(".del"); if(!b) return;
+  if(!confirm("이 지출을 삭제할까요?")) return;
+  try{ await store.remove(b.dataset.id); await load(); toast("삭제했어요"); }catch(err){ toast("삭제 실패"); console.error(err); }
+});
+$("#sync").addEventListener("click",()=>load(true));
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden && sb) load(); });
+if(sb) setInterval(()=>{ if(!document.hidden) load(); }, 20000);
+
+setup(); load();
+</script>
+</body>
+</html>
